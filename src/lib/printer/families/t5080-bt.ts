@@ -70,10 +70,12 @@ export interface FrameChannelOptions {
 	/** Reply timeout for commands (default 2000 ms like the app over SPP; the app uses 4 s on BLE). */
 	commandTimeoutMs?: number;
 	/**
-	 * Fail the transfer when a data frame gets no reply within 2 s, taking any received bytes as
-	 * the reply (the E10/T10 apps do both; the T50/T80 driver carries on).
+	 * Fail the transfer when a data frame gets no reply within `ackTimeoutMs`, taking any received
+	 * bytes as the reply (the E10/T10 apps do both; the T50/T80 driver carries on).
 	 */
 	strictAcks?: boolean;
+	/** How long to wait for each data frame's reply (default 2000 ms). */
+	ackTimeoutMs?: number;
 }
 
 /**
@@ -99,6 +101,7 @@ export class FrameChannel {
 	readonly acksDataFrames: boolean;
 	readonly commandTimeoutMs: number;
 	readonly strictAcks: boolean;
+	readonly ackTimeoutMs: number;
 	/** Bytes received so far (never reset), to tell whether anything arrived. */
 	private received = 0;
 
@@ -109,6 +112,7 @@ export class FrameChannel {
 		this.acksDataFrames = opts.acksDataFrames ?? true;
 		this.commandTimeoutMs = opts.commandTimeoutMs ?? 2000;
 		this.strictAcks = opts.strictAcks ?? false;
+		this.ackTimeoutMs = opts.ackTimeoutMs ?? 2000;
 		this.unsubscribe = transport.onData((chunk) => this.receive(chunk));
 	}
 
@@ -152,7 +156,7 @@ export class FrameChannel {
 	}
 
 	/** Wait for the first frame accepted by `match` (others are dropped); null on timeout. */
-	private async next(match: (f: Uint8Array) => boolean, timeoutMs: number): Promise<Uint8Array | null> {
+	private async next(match: (f: Uint8Array) => boolean, timeoutMs: number, signal?: AbortSignal): Promise<Uint8Array | null> {
 		const deadline = Date.now() + timeoutMs;
 		for (;;) {
 			while (this.frames.length) {
@@ -161,15 +165,26 @@ export class FrameChannel {
 			}
 			const left = deadline - Date.now();
 			if (left <= 0) return null;
-			await new Promise<void>((resolve) => {
-				const t = setTimeout(resolve, left);
-				this.wake = () => {
-					clearTimeout(t);
-					resolve();
-				};
-			});
-			this.wake = null;
+			await this.idle(left, signal);
 		}
+	}
+
+	/** Wait up to `ms` for more input; throws if `signal` aborts meanwhile. */
+	private async idle(ms: number, signal?: AbortSignal) {
+		const cancelled = () => new PrinterError('Cancelled', 'cancelled');
+		if (signal?.aborted) throw cancelled();
+		await new Promise<void>((resolve) => {
+			const done = () => {
+				clearTimeout(t);
+				signal?.removeEventListener('abort', done);
+				resolve();
+			};
+			const t = setTimeout(done, ms);
+			this.wake = done;
+			signal?.addEventListener('abort', done, { once: true });
+		});
+		this.wake = null;
+		if (signal?.aborted) throw cancelled();
 	}
 
 	private serialize<T>(run: () => Promise<T>): Promise<T> {
@@ -228,25 +243,18 @@ export class FrameChannel {
 				await sleep(10);
 			}
 			if (this.strictAcks) {
-				if (!(await this.input(before, 2000))) throw new PrinterError('Printer did not acknowledge the print data', 'timeout');
-			} else if (this.acksDataFrames) await this.next(() => true, 2000);
+				if (!(await this.input(before, this.ackTimeoutMs, signal))) throw new PrinterError('Printer did not acknowledge the print data', 'timeout');
+			} else if (this.acksDataFrames) await this.next(() => true, this.ackTimeoutMs, signal);
 		}
 	}
 
 	/** Wait until more than `since` bytes have been received in total; false on timeout. */
-	private async input(since: number, timeoutMs: number): Promise<boolean> {
+	private async input(since: number, timeoutMs: number, signal?: AbortSignal): Promise<boolean> {
 		const deadline = Date.now() + timeoutMs;
 		while (this.received <= since) {
 			const left = deadline - Date.now();
 			if (left <= 0) return false;
-			await new Promise<void>((resolve) => {
-				const t = setTimeout(resolve, left);
-				this.wake = () => {
-					clearTimeout(t);
-					resolve();
-				};
-			});
-			this.wake = null;
+			await this.idle(left, signal);
 		}
 		return true;
 	}

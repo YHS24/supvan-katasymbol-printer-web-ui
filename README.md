@@ -9,7 +9,8 @@
 Design and print labels on Katasymbol / Supvan label printers straight from the browser, over USB or Bluetooth.
 A web replacement for the KatasymbolEditor desktop app: add text, icons (all ~1,850 Lucide icons,
 searchable), QR codes, shapes, images and tables, edit the label in portrait or landscape, see
-exactly which dots will print, and print.
+exactly which dots will print, and print. Designs can be saved as named templates in the browser
+(**Templates** in the header) and exported to / imported from `.json` files.
 
 ```sh
 npm install

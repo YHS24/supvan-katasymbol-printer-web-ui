@@ -5,6 +5,13 @@ const STORAGE_KEY = 'katasymbol-web:v1';
 
 export type Orientation = 'portrait' | 'landscape';
 
+/** A complete label design: what templates save and load. */
+export interface LabelDesign {
+	label: LabelSpec;
+	orientation: Orientation;
+	elements: DesignElement[];
+}
+
 /** How a label comes in its own frame (lengthMm x widthMm); square counts as landscape. */
 export const nativeOrientation = (label: LabelSpec): Orientation => (label.lengthMm >= label.widthMm ? 'landscape' : 'portrait');
 
@@ -133,6 +140,30 @@ class EditorStore {
 
 	private viewOf(label: LabelSpec, orientations = this.orientations): LabelSpec {
 		return this.isTurned(label, orientations) ? turnedLabel(label) : label;
+	}
+
+	/** The current design, detached from the store. */
+	get design(): LabelDesign {
+		return {
+			label: $state.snapshot(this.label) as LabelSpec,
+			orientation: this.orientation,
+			elements: $state.snapshot(this.elements) as DesignElement[]
+		};
+	}
+
+	/**
+	 * Replace the design with a saved one (undoable). A template for another label pins that label,
+	 * so it opens as saved instead of being refitted to the label in the printer.
+	 */
+	loadDesign(d: LabelDesign) {
+		this.checkpoint();
+		if (d.label.id !== this.label.id) this.labelAuto = false;
+		this.label = clone(d.label);
+		this.orientations = { ...this.orientations, [d.label.id]: d.orientation };
+		this.elements = clone(d.elements);
+		this.selectedId = null;
+		this.tableCell = null;
+		this.persist();
 	}
 
 	/**

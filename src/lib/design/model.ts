@@ -64,6 +64,8 @@ export interface ImageElement extends Base {
 	/** 0..255 threshold, or dithering. */
 	threshold: number;
 	dither: boolean;
+	/** Count colour by its saturation as dark, so light colours (yellow, orange) print solid. */
+	colorAsBlack?: boolean;
 }
 
 export interface TableCell {

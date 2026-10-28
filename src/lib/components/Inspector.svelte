@@ -373,6 +373,7 @@
 			</div>
 		{:else if el.type === 'image'}
 			<label class="check"><input type="checkbox" checked={el.dither} onchange={(e) => set({ dither: e.currentTarget.checked })} /> Dither (for photos)</label>
+			<label class="check"><input type="checkbox" checked={!!el.colorAsBlack} onchange={(e) => set({ colorAsBlack: e.currentTarget.checked })} /> Colours print as black</label>
 			<label class="field">
 				<span>Threshold · {el.threshold}</span>
 				<input type="range" min="10" max="245" step="1" value={el.threshold} onpointerdown={() => editor.checkpoint()} oninput={(e) => live({ threshold: num(e) })} />

@@ -275,7 +275,7 @@ function drawTable(ctx: CanvasRenderingContext2D, el: TableElement, w: number, h
 const processedImages = new Map<string, HTMLCanvasElement>();
 
 function processImage(el: ImageElement, img: HTMLImageElement, wPx: number, hPx: number, invert: boolean) {
-	const key = `${el.src.length}:${el.src.slice(-64)}:${wPx}x${hPx}:${el.threshold}:${el.dither}:${invert}`;
+	const key = `${el.src.length}:${el.src.slice(-64)}:${wPx}x${hPx}:${el.threshold}:${el.dither}:${!!el.colorAsBlack}:${invert}`;
 	const hit = processedImages.get(key);
 	if (hit) return hit;
 	const c = document.createElement('canvas');
@@ -287,7 +287,18 @@ function processImage(el: ImageElement, img: HTMLImageElement, wPx: number, hPx:
 	cx.drawImage(img, 0, 0, c.width, c.height);
 	const d = cx.getImageData(0, 0, c.width, c.height);
 	const gray = new Float32Array(c.width * c.height);
-	for (let i = 0; i < gray.length; i++) gray[i] = d.data[i * 4] * 0.3 + d.data[i * 4 + 1] * 0.59 + d.data[i * 4 + 2] * 0.11;
+	for (let i = 0; i < gray.length; i++) {
+		const R = d.data[i * 4];
+		const G = d.data[i * 4 + 1];
+		const B = d.data[i * 4 + 2];
+		gray[i] = R * 0.3 + G * 0.59 + B * 0.11;
+		if (el.colorAsBlack) {
+			// Darken by saturation: a strong yellow lands near black, white and greys are unchanged,
+			// and pale anti-aliased edges stay light so outlines don't grow.
+			const max = Math.max(R, G, B);
+			gray[i] *= 1 - (max ? (max - Math.min(R, G, B)) / max : 0);
+		}
+	}
 	for (let y = 0; y < c.height; y++) {
 		for (let x = 0; x < c.width; x++) {
 			const i = y * c.width + x;

@@ -88,7 +88,18 @@ export async function pickDevice(devices: HIDDevice[]): Promise<HIDDevice | unde
 }
 
 export async function requestPrinter(): Promise<HIDDevice | undefined> {
-	return pickDevice(await navigator.hid.requestDevice({ filters: HID_FILTERS }));
+	const devices = await navigator.hid.requestDevice({ filters: HID_FILTERS });
+	const picked = await pickDevice(devices);
+	if (!picked && devices.length) {
+		// A Supvan printer the table doesn't know: say which, instead of silently doing nothing.
+		const ids = [...new Set(devices.map((d) => `0x${d.productId.toString(16).padStart(4, '0')}`))].join(', ');
+		const name = devices.find((d) => d.productName)?.productName;
+		throw new PrinterError(
+			`This printer isn't supported yet${name ? ` (${name}, ` : ' ('}USB product id ${ids}). Please report the model name and this id on GitHub so it can be added.`,
+			'unsupported'
+		);
+	}
+	return picked;
 }
 
 export async function grantedPrinter(): Promise<HIDDevice | undefined> {

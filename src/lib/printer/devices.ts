@@ -29,6 +29,17 @@ export const DEVICE_MODELS: DeviceModel[] = [
 	{ productId: 0x207a, name: 'T80M Pro', family: 't5080', dpmm: 8, headDots: 576, listed: true },
 	{ productId: 0x2071, name: 'T50 Max', family: 't5080', dpmm: 8, headDots: 384, listed: false },
 	{ productId: 0x2078, name: 'T80M Pro', family: 't5080', dpmm: 8, headDots: 576, listed: false },
+	// Newer T50/T80 revisions KatasymbolEditor 1.1.1 predates, from SupvanEditor 2.4.24
+	// (Supvan.UsbDev.UsbCtrlFunc.GetDevType / GetDevName) and the Sep 2026 Windows T50 driver
+	// (SupvanT50.dll), which drive them exactly like 0x2073 / 0x2075. 0x207f is the 2026 T50M Pro
+	// (Supvan calls it "T50 Pro"; USB 1820:207f reported by a user). The 300 dpi T80 Pro+ (0x207b)
+	// and T50 Plus+ (0x207c) are left out as the T50/T80 driver assumes 8 dots/mm.
+	{ productId: 0x207f, name: 'T50M Pro', family: 't5080', dpmm: 8, headDots: 384, listed: false },
+	{ productId: 0x207d, name: 'T50 Max', family: 't5080', dpmm: 8, headDots: 384, listed: false },
+	{ productId: 0x2170, name: 'T50 Max', family: 't5080', dpmm: 8, headDots: 384, listed: false },
+	{ productId: 0x2070, name: 'T50M', family: 't5080', dpmm: 8, headDots: 384, listed: false },
+	{ productId: 0x2079, name: 'A80 Pro', family: 't5080', dpmm: 8, headDots: 576, listed: false },
+	{ productId: 0x207e, name: 'T80 Max', family: 't5080', dpmm: 8, headDots: 576, listed: false },
 	// SP sign printers, 300 dpi.
 	{ productId: 0x203e, name: 'SP650', family: 'sp', dpmm: 11.8, headDots: 672, listed: true },
 	// TP tube/wire marker printers.

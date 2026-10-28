@@ -363,6 +363,7 @@ class PrinterStore {
 			if (d) await this.open(d);
 		} catch (e) {
 			if ((e as Error)?.name === 'NotFoundError') return; // chooser dismissed
+			this.addLog(`connect failed: ${(e as Error).message}`);
 			this.setError((e as Error).message);
 			this.state = 'disconnected';
 		}

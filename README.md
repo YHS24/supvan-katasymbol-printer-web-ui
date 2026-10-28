@@ -175,7 +175,7 @@ series from the SUPRINT Android app:
 
 | Family             | Models                                                         | Status                                                                                                         |
 | ------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| T50/T80 (`t5080`)  | T50M, T50M Plus, T50M Pro (incl. the 2026 `1820:207f` revision), T50S, T50i, T50 Max, T80M, T80M Pro, A80 Pro, T80 Max | Encoder byte-identical to the official app; printed on a real T50M Pro (USB `1820:2076`)                       |
+| T50/T80 (`t5080`)  | T50M Plus, T50M Pro (incl. the 2026 `1820:207f` revision), T50S, T50i, T50 Max, T80M, T80M Pro, A80 Pro, T80 Max | Encoder byte-identical to the official app; printed on a real T50M Pro (USB `1820:2076`)                       |
 | SP (`sp`)          | SP650                                                          | Byte-identical encoder; not hardware-tested                                                                    |
 | TP (`tp`, `tp86a`) | TP76i, TP80A, TP86A                                            | Byte-identical encoders and full-job report streams in simulation; not hardware-tested                         |
 | G (`g`)            | G11 Pro, G15 Pro, G15 MPro, G18 Pro, G21, G25, G28             | Byte-identical at 203 dpi; 300 dpi (G25/G28) geometry is a best effort because the official code crashes there |

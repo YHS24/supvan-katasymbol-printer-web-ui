@@ -33,11 +33,11 @@ export const DEVICE_MODELS: DeviceModel[] = [
 	// (Supvan.UsbDev.UsbCtrlFunc.GetDevType / GetDevName) and the Sep 2026 Windows T50 driver
 	// (SupvanT50.dll), which drive them exactly like 0x2073 / 0x2075. 0x207f is the 2026 T50M Pro
 	// (Supvan calls it "T50 Pro"; USB 1820:207f reported by a user). The 300 dpi T80 Pro+ (0x207b)
-	// and T50 Plus+ (0x207c) are left out as the T50/T80 driver assumes 8 dots/mm.
+	// and T50 Plus+ (0x207c) are left out as the T50/T80 driver assumes 8 dots/mm, and the T50M
+	// (0x2070) because SupvanEditor sends it one 40000-byte buffer instead of 8 × 4096.
 	{ productId: 0x207f, name: 'T50M Pro', family: 't5080', dpmm: 8, headDots: 384, listed: false },
 	{ productId: 0x207d, name: 'T50 Max', family: 't5080', dpmm: 8, headDots: 384, listed: false },
 	{ productId: 0x2170, name: 'T50 Max', family: 't5080', dpmm: 8, headDots: 384, listed: false },
-	{ productId: 0x2070, name: 'T50M', family: 't5080', dpmm: 8, headDots: 384, listed: false },
 	{ productId: 0x2079, name: 'A80 Pro', family: 't5080', dpmm: 8, headDots: 576, listed: false },
 	{ productId: 0x207e, name: 'T80 Max', family: 't5080', dpmm: 8, headDots: 576, listed: false },
 	// SP sign printers, 300 dpi.
